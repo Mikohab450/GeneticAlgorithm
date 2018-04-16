@@ -1,0 +1,5 @@
+﻿cl : Command line warning D9025: overriding '/sdl' with '/GS-'
+  Source.c
+c:\users\student\documents\git\lab2\lab2\source.c(43): warning C4996: 'strdup': The POSIX name for this item is deprecated. Instead, use the ISO C and C++ conformant name: _strdup. See online help for details.
+  c:\program files (x86)\windows kits\10\include\10.0.10240.0\ucrt\string.h(552): note: see declaration of 'strdup'
+  lab2.vcxproj -> C:\Users\Student\Documents\git\lab2\Debug\lab2.exe
