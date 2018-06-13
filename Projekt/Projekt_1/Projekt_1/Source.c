@@ -6,14 +6,13 @@
 #define len 5
 #define mutation_propability 0.001
 
-void create(struct chromosom** phead);
 void crossover(struct chromosom* p1, struct chromosom*p2, int k);
 void set_base_population(struct osobnik base[]);
 void judge_population(struct osobnik pop[]);
 double fitness_function(struct chromosom* chrom);
 double function_(double x);
 void choose_population(struct osobnik parents[], struct osobnik offspring[]);
-void sort(struct osobnik p[],int size);
+void sort(struct osobnik p[],int left,int right);
 void mutation(struct osobnik m[]);
 
 enum bool{
@@ -37,26 +36,16 @@ int main()
 {
 	srand(time(NULL));
 	int k;
-	/*struct chromosom* test = NULL;
-	for (int i = 0; i < len; i++) {
-		create(&test);
-	}
-	struct chromosom* test2 = NULL;
-	for (int i = 0; i < len; i++) {
-		create(&test2);
-	}
-	crossover(test,test2,1);
-	*/
-	struct osobnik base_population[population]=NULL;
-	struct osobnik next_population[population];
-	set_base_population(next_population);
-	int generation = 10;
+
+	struct osobnik base_population[population] = { NULL };
+	struct osobnik next_population[population] = { NULL };
+	set_base_population(base_population);
+	int generation = 1;
 	for(int m=0; m<generation;m++)
 	{
-		{
 
-		}
-		judge_population(next_population);
+		judge_population(base_population);
+		choose_population(base_population, next_population);
 		for (int i = 0; i < population - 1; i += 2)
 		{
 			k = rand() % len;
@@ -65,16 +54,6 @@ int main()
 	};
 
 	return 0;
-}
-
-void create(struct chromosom** phead)
-{
-	enum bool x;
-	scanf("%d", &x);
-	struct chromosom* nowy = malloc(sizeof(struct chromosom));
-	nowy->gen = x;
-	nowy->next = *phead;
-	*phead = nowy;	
 }
 
 void crossover(struct chromosom* p1, struct chromosom* p2, int k)
@@ -141,7 +120,7 @@ double function_(double x)
 
 void choose_population(struct osobnik parents[], struct osobnik offspring[])
 {
-	sort(parents,population);
+	sort(parents,0,population-1);
 	double partial_sum = 0;
 	for(int i = 0; i < population; i++)
 		parents[i].rank = i + 1;
@@ -155,7 +134,7 @@ void choose_population(struct osobnik parents[], struct osobnik offspring[])
 
 		for (i = 0; partial_sum < current_point; i++)
 		{
-			partial_sum += parents[i].fitness;
+			partial_sum += parents[i].rank;
 		}
 		current_point += p;
 		offspring[j] = parents[i];
@@ -164,15 +143,34 @@ void choose_population(struct osobnik parents[], struct osobnik offspring[])
 	}
 }
 
-void sort(struct osobnik p[],int size){
+void sort(struct osobnik p[], int left, int right) {
+	int i, j;
+	i = (left + right) / 2;
+	struct osobnik piwot, temp;
+	piwot = p[i];
+	p[i] = p[right];
+	for (i = j = 0; i < right; i++)
+	{
+		if (p[i].fitness < piwot.fitness)
+		{
+			temp = p[i];
+			p[i] = p[j];
+			p[j] = temp;
+			j++;
+		}
+	}
+		p[right] = p[j];
+		p[j] = piwot; 
+	
+	if (left < j - 1)  sort(p,left, j - 1);
+	if (j + 1 < right) sort(p,j + 1,right);
 
 }
 
 
 void mutation(struct osobnik m[]) {
-	enum bool mutate;
 	struct chromosom* current;
-		for (int j = 0; j < population j++)
+		for (int j = 0; j < population ;j++)
 		{
 			current = m[j].genotyp;
 			for(int i=0;i<len;i++)
