@@ -1,22 +1,14 @@
 #include"Header.h"
 
-void cross(struct osobnik p[]) {
-	int t = population;
-	struct osobnik temp;
-	int p1, k;
-	for (int i = 0; i < population - 1; i++)
+void cross(struct osobnik p[],int population) {
+
+	int k;
+	shuffle(p, population);
+	for (int i = 0; i < population - 1; i+=2)
 	{
-		p1 = rand() % (population - i);
-		temp = p[p1];
-		p[p1] = p[population - i - 1];
-		p[population - i - 1] = temp;
-		i++;
-		p1 = rand() % (population - i);
-		temp = p[p1];
-		p[p1] = p[population - i - 1];
-		p[population - i - 1] = temp;
-		k = rand() % len;
-		crossover(p[population - i].genotyp, p[population - i - 1].genotyp, k);
+	
+		k = rand() % size_64;
+		crossover(&p[i].chromosom, &p[i+1].chromosom, k);
 	}
 
 }
@@ -24,72 +16,45 @@ void cross(struct osobnik p[]) {
 
 
 
-void crossover(struct chromosom* p1, struct chromosom* p2, int k)
-{
 
-	struct chromosom* temp1;
-	struct chromosom*temp2;
-	temp1 = p1;
-	temp2 = p2;
-	for (int i = 0; i < k - 1; i++) {
-		temp1 = temp1->next;
-		temp2 = temp2->next;
-	}
-	struct chromosom* temp3;
-	temp3 = temp1->next;
-	temp1->next = temp2->next;
-	temp2->next = temp3;
-}
-
-
-
-void set_base_population(struct osobnik base[])
+void set_base_population(struct osobnik base[],int population)
 {
 	for (int i = 0; i < population; i++)
 	{
-		for (int j = 0; j < len; j++)
-		{
-
-			struct chromosom* nowy = malloc(sizeof(struct chromosom));
-			nowy->gen = rand() & 1;
-			nowy->next = base[i].genotyp;
-			base[i].genotyp = nowy;
-		}
+		base[i].chromosom = rand()<<49;
+		base[i].chromosom |=rand()<<32;
+		base[i].chromosom |=rand()<<16;
 	}
 }
 
-void judge_population(struct osobnik pop[])
+void judge_population(struct osobnik pop[],int population)
 {
-	for (int i = 0; i < population; i++)
+	for (int i = 0; i <population ; i++)
 	{
-		pop[i].fitness = -fitness_function(pop[i].genotyp);
+		pop[i].fitness = -fitness_function(pop[i].chromosom);
 	}
 
 }
 
-double fitness_function(struct chromosom* chrom)
+double fitness_function(int64_t chrom)
 {
-	double t;
-	struct chromosom* temp = chrom->next;
-	double L = temp->gen;
-	for (int i = 1; i < len - 1; i++)
-	{
-		temp = temp->next;
-		L = L * 2 + temp->gen;
-	}
-	t = pow(2, -4);
-	if (chrom->gen)
-		return function_((-L*t));
-	else
-		return function_((L*t));
+	double x =pow(2, -31)*chrom;
+		return function_2(x);
+	
 }
 
-double function_(double x)
+double function_1(double x)
 {
-	return (x*x*x*x + 3 * x*x*x - 1);
+	return (x*x*x*x + x*x+ 3* x - 1+20*sin(2*x));
 }
 
-void choose_population(struct osobnik parents[], struct osobnik offspring[])
+double function_2(double x)
+{
+	return (20*sin(6*x) + 2*x*x*x*x + 16*x*x*x + x*x);
+}
+
+
+void choose_population(struct osobnik parents[], struct osobnik offspring[], int population)
 {
 	sort(parents, 0, population - 1);
 	double partial_sum = 0;
@@ -142,22 +107,26 @@ void sort(struct osobnik p[], int left, int right) {
 }
 
 
-void mutate(struct osobnik m[]) {
-	struct chromosom* current;
-	for (int j = 0; j < population; j++)
+void mutate(struct osobnik m[],double probability) {
+	
+	for (int j = 0; j <2; j++)
 	{
-		current = m[j].genotyp;
-		for (int i = 0; i<len; i++)
-			if ((double)rand() / RAND_MAX < mutation_propability)
+		int64_t k;
+		double mutate;
+		for (int i = 0; i < size_64; i++)
+		{
+			k = 1;
+			mutate = (double)rand() / RAND_MAX;
+			if (mutate < probability)
 			{
-				current->gen = !current->gen;
+				k=k << i;
+				m[j].chromosom ^= k;
 			};
-		current = current->next;
-
+		}
 	}
 }
 
-void copy(struct osobnik parents[], struct osobnik offspring[]) {
+void copy(struct osobnik parents[], struct osobnik offspring[], int population) {
 	for (int i = 0; i < population; i++)
 	{
 		parents[i] = offspring[i];
@@ -166,19 +135,37 @@ void copy(struct osobnik parents[], struct osobnik offspring[]) {
 
 
 
-void delete_list(struct osobnik populacja[])
-{
-	struct chromosom* temp;
-	struct chromosom* temp2;
-	for (int i =0; i<population; i++)
-	{
-		temp = populacja[i].genotyp;
-		for (int j = 0; j < len ; j++)
-		{
-			temp2 = temp;
-			temp = temp2->next;
-			free(temp2);
-		}
-	}
 
+void crossover(int64_t* p1, int64_t* p2, int k)
+{
+	int64_t temp1, temp2, x;
+	temp1 = *p1;
+	temp2 = *p2;
+	x = 0;
+	x = ~x;
+	x = (uint64_t)x >> 1;
+	x = x << k;
+	*p1 &= x;
+	*p2 &= x;
+	x = ~x;
+	temp1 &= x;
+	temp2 &= x;
+	*p1 += temp2;
+	*p2 += temp1;
+
+}
+
+void shuffle(struct osobnik p[], int population) {
+
+	struct osobnik temp; 
+	int p1, p2;
+	int loop = 3*population;
+	for (int i = 0; i < loop; i++)
+	{
+		p1 = rand() % size_64;
+		p2 = rand() % size_64;
+		temp = p[p1];
+		p[p1] = p[p2];
+		p[p2] = temp;
+	}
 }
