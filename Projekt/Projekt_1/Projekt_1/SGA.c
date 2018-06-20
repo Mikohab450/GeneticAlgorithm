@@ -1,15 +1,18 @@
 #include"Header.h"
 
 
-
-
 void set_base_population(struct osobnik* base, int population)
 {
+
+	
 	for (int i = 0; i < population; i++)
 	{
-		for (int j = 0; j < 4; ++j) 
+		
+		base[i].chromosom = 0;
+		for (int j = 0; j < 5; ++j) 
 			base[i].chromosom = (base[i].chromosom << 15) | (rand() & 0x7FFF); //losowanie liczby 64 bitowej
-		/*
+		
+		/*	
 			rand() & 0x7FFF zwroci 15 losowych bitow
 			ktore sa dodawane do chromosomu, ktory jest za kazdym razem przesuwany o 15 bitow w lewo(aby zrobic miejsce na nowa porcje bitow)
 		*/
@@ -43,21 +46,16 @@ void choose_and_cross(struct osobnik* p,int population) {
 
 double fitness_function(int64_t chrom)
 {
-	double x =pow(2, -31)*chrom;
+	double x =pow(2, -31)*chrom;	//geny sa reprezentowa jako liczby staloprzecinkowe o okreslonej precyzji
 		return function_1(x);
 	
 }
 
+
 double function_1(double x)
 {
-	return (x*x*x*x + x*x+ 3* x - 1+20*sin(2*x));
+	return (sin(16 * x) + 2 * pow(x,4) + 6 * pow(x,3) + pow(x , 3)+4*pow(x,2));
 }
-
-double function_2(double x)
-{
-	return (20*sin(6*x) + 2*x*x*x*x + 16*x*x*x + x*x);
-}
-
 
 void choose_population(struct osobnik* parents, struct osobnik* offspring, int population)
 {
@@ -166,15 +164,11 @@ void shuffle(struct osobnik* p, int population) {
 	int loop = 3*population;
 	for (int i = 0; i < loop; i++)
 	{
-		p1 = rand() % size_64;	//losowanie indeksow								
-		p2 = rand() % size_64;				
+		p1 = rand() % population;	//losowanie indeksow								
+		p2 = rand() % population;				
 		temp = p[p1];		//zamiana elementow tablicy
 		p[p1] = p[p2];
 		p[p2] = temp;
 	}
 }
 
-void free_pop(struct osobnik* p1, struct osobnik* p2)
-{
-	
-}

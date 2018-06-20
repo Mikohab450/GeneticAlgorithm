@@ -4,7 +4,7 @@
 
 int main(int argc, char** argv[])
 {	
-	//srand(time(NULL));
+	//srand(time(NULL));		//linijka zakomentowana na czas testownia programu dla roznych parametrow wejsciowych
 	int population;
 	int gen_check = 0, mut_check = 0, pop_check = 0;//zmienne pzechowujace informacje o tym, czy parametry zostaly odczytane poprawnie
 	char* temp;
@@ -30,33 +30,34 @@ int main(int argc, char** argv[])
 				generation = atoi(argv[i + 1]);
 				gen_check = 1;
 			}
-				
 		}
-	
+	if (gen_check && pop_check && mut_check)		//jezeli wszystki parametry zostaly odczytane
+	{
 		FILE* fp;
-		fp = fopen("da.txt", "w");
+		fp = fopen("FUN_test.txt", "w");
 		struct osobnik* base_population = (struct osobnik*)malloc(population * sizeof(struct osobnik));
 		struct osobnik* next_population = (struct osobnik*)malloc(population * sizeof(struct osobnik));;
-		set_base_population(base_population, population);
+		set_base_population(base_population, population);		//ustawienie populacji poczatkowej
 
-		for (int m = 0; m < generation; m++)
+		for (int m = 0; m < generation; m++)		//przez okreslona liczbe iteracji
 		{
-			
-			judge_population(base_population, population);
-			choose_population(base_population, next_population, population);
-			fprintf(fp, "%d\t %f\n", m, base_population[population - 1].fitness);
-			choose_and_cross(next_population, population);
-			mutate(next_population, mutation_probability, population);
-			copy(base_population, next_population, population);
-			
+
+			judge_population(base_population, population);		//ocena populazji bazowej
+			choose_population(base_population, next_population, population);	//wybor osobnikow do kolejnej populacji
+			fprintf(fp, "%d\t %f\n", m, base_population[population - 1].fitness);	//zapis najlepszego osobnika do pliku
+			choose_and_cross(next_population, population);		//krzyzowanie nowej populacji
+			mutate(next_population, mutation_probability, population);		//mutacja nowej populacji
+			copy(base_population, next_population, population);	//nowa populacja staje sie populacja bazowa
+
 
 		};
-		free(base_population);
+		free(base_population);	//zwolnienie pamieci
 		free(next_population);
-		/*sort(base_population,0 ,population-1);
-		double best = -base_population[population - 1].fitness;
-		struct chromosom* best_chromosom = base_population[population - 1].genotyp;
-		*/
-	
+		base_population = NULL;
+		next_population = NULL;
+
+	}
+	else
+		printf("Nieprawidlowe parametry!");
 	return 0;
 }
